@@ -75,6 +75,7 @@ class Game:
             self.score += 1
             self.y = 0
             self.x = np.random.randint(0, self.width - self.size)
+            self.speed = np.random.randint(5,15)
 
         # region of interest :roi
         roi = fg_mask[self.y: self.y+self.size,  self.x: self.x+self.size]
@@ -83,6 +84,7 @@ class Game:
             self.score -= 1
             self.y = 0
             self.x = np.random.randint(0, self.width-self.size)
+            self.speed = np.random.randint(15,20)
         return check
 
 

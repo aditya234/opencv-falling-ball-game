@@ -42,7 +42,7 @@ class BackgroundExtraction:
         self.update_frame(gray)
         abs_diff = cv2.absdiff(bg_buffer.get_background(), gray)
         _, ad_mask = cv2.threshold(abs_diff, 15, 255, cv2.THRESH_BINARY)
-        return ad_mask
+        return cv2.resize(ad_mask, (self.width*self.scale, self.height*self.scale))
 
 
 class Game:
@@ -60,22 +60,30 @@ class Game:
 
         self.x = np.random.randint(0, self.width - self.size)
         self.y = 0
-        self.speed = 10
+        self.speed = 2
         self.score = 0
 
     def update_frame(self,frame):
-        self.update_position()
         # inserting the bomb
         roi = frame[self.y: self.y+self.size,  self.x: self.x+self.size]
         roi[np.where(self.mask)] = 0  # all the places where mask values are non zero, put those as 0 in roi
         roi += self.bomb
 
-    def update_position(self):
+    def update_position(self, fg_mask):
         self.y += self.speed
         if self.y+self.size == self.height:
             self.score += 1
             self.y = 0
             self.x = np.random.randint(0, self.width - self.size)
+
+        # region of interest :roi
+        roi = fg_mask[self.y: self.y+self.size,  self.x: self.x+self.size]
+        check = np.any(roi[np.where(self.mask)])
+        if check:
+            self.score -= 1
+            self.y = 0
+            self.x = np.random.randint(0, self.width-self.size)
+        return check
 
 
 width = 640
@@ -97,10 +105,17 @@ while True:
     frame = cv2.flip(frame, 1)
 
     # Processing the frame
-    # fg_mask = bg_buffer.apply(frame)
+    fg_mask = bg_buffer.apply(frame)
+
+
     text = f"Score: {game.score}"
     cv2.putText(frame,text,(20,40),cv2.FONT_HERSHEY_PLAIN, 2.0, (255,0,0),2)
+
+    hit = game.update_position(fg_mask)
     game.update_frame(frame)
+
+    if hit:
+        frame[:,:,2] = 255
 
     # cv2.imshow("FG Mask", fg_mask)
     cv2.imshow("Webcam", frame)

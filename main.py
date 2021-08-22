@@ -61,6 +61,7 @@ class Game:
         self.x = np.random.randint(0, self.width - self.size)
         self.y = 0
         self.speed = 10
+        self.score = 0
 
     def update_frame(self,frame):
         self.update_position()
@@ -72,6 +73,7 @@ class Game:
     def update_position(self):
         self.y += self.speed
         if self.y+self.size == self.height:
+            self.score += 1
             self.y = 0
             self.x = np.random.randint(0, self.width - self.size)
 
@@ -96,7 +98,8 @@ while True:
 
     # Processing the frame
     # fg_mask = bg_buffer.apply(frame)
-
+    text = f"Score: {game.score}"
+    cv2.putText(frame,text,(20,40),cv2.FONT_HERSHEY_PLAIN, 2.0, (255,0,0),2)
     game.update_frame(frame)
 
     # cv2.imshow("FG Mask", fg_mask)

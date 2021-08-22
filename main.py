@@ -58,14 +58,22 @@ class Game:
         # masking - take all the color codes which are equal or above 1, and convert them to value 255
         _, self.mask = cv2.threshold(grey, 1, 255, cv2.THRESH_BINARY)
 
-        self.x = 100
-        self.y = 100
+        self.x = np.random.randint(0, self.width - self.size)
+        self.y = 0
+        self.speed = 10
 
     def update_frame(self,frame):
+        self.update_position()
         # inserting the bomb
         roi = frame[self.y: self.y+self.size,  self.x: self.x+self.size]
         roi[np.where(self.mask)] = 0  # all the places where mask values are non zero, put those as 0 in roi
         roi += self.bomb
+
+    def update_position(self):
+        self.y += self.speed
+        if self.y+self.size == self.height:
+            self.y = 0
+            self.x = np.random.randint(0, self.width - self.size)
 
 
 width = 640

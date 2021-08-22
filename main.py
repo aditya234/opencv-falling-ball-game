@@ -45,6 +45,29 @@ class BackgroundExtraction:
         return ad_mask
 
 
+class Game:
+    def __init__(self, width, height, size=50):
+        self.width = width
+        self.height = height
+        self.size = size
+
+        self.bomb = cv2.imread('blast.jpg')
+        self.bomb = cv2.resize(self.bomb, (self.size, self.size))
+        grey = cv2.cvtColor(self.bomb, cv2.COLOR_BGR2GRAY)
+
+        # masking - take all the color codes which are equal or above 1, and convert them to value 255
+        _, self.mask = cv2.threshold(grey, 1, 255, cv2.THRESH_BINARY)
+
+        self.x = 100
+        self.y = 100
+
+    def update_frame(self,frame):
+        # inserting the bomb
+        roi = frame[self.y: self.y+self.size,  self.x: self.x+self.size]
+        roi[np.where(self.mask)] = 0  # all the places where mask values are non zero, put those as 0 in roi
+        roi += self.bomb
+
+
 width = 640
 height = 480
 scale = 2
@@ -55,6 +78,8 @@ cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
 bg_buffer = BackgroundExtraction(width, height, scale, maxlen=5)
 
+game = Game(width=width,height=height)
+
 while True:
     # Reading, resizing, and flipping the frame
     _, frame = cap.read()
@@ -62,9 +87,11 @@ while True:
     frame = cv2.flip(frame, 1)
 
     # Processing the frame
-    fg_mask = bg_buffer.apply(frame)
+    # fg_mask = bg_buffer.apply(frame)
 
-    cv2.imshow("FG Mask", fg_mask)
+    game.update_frame(frame)
+
+    # cv2.imshow("FG Mask", fg_mask)
     cv2.imshow("Webcam", frame)
 
     if cv2.waitKey(1) == ord('q'):

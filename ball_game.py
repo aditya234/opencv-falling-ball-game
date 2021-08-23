@@ -47,10 +47,10 @@ class BackgroundExtraction:
     def get_fg_mask(self, frame):
         down_scale = cv2.resize(frame, (self.width, self.height))
         gray = cv2.cvtColor(down_scale, cv2.COLOR_BGR2GRAY)
-        gray = cv2.GaussianBlur(gray, (5, 5), 0)
+        gray = cv2.GaussianBlur(gray, (15, 15), 0)
 
         abs_diff = cv2.absdiff(bg_buffer.get_background(), gray)
-        _, ad_mask = cv2.threshold(abs_diff, 50, 255, cv2.THRESH_BINARY)
+        _, ad_mask = cv2.threshold(abs_diff, 64, 255, cv2.THRESH_BINARY)
         return cv2.resize(ad_mask, (self.width * self.scale, self.height * self.scale))
 
 
@@ -78,7 +78,7 @@ class Game:
         if self.y + self.size >= self.height:
             self.score += 1
             self.y = 0
-            self.speed = np.random.randint(10, 15)
+            # self.speed = np.random.randint(10, 15)
             self.x = np.random.randint(0, self.width - self.size)
 
         roi = fg_mask[self.y:self.y + self.size, self.x:self.x + self.size]
@@ -86,13 +86,13 @@ class Game:
         if check:
             self.score -= 1
             self.y = 0
-            self.speed = np.random.randint(10, 20)
+            # self.speed = np.random.randint(10, 20)
             self.x = np.random.randint(0, self.width - self.size)
         return check
 
 
-width = 640
-height = 480
+width = 1280
+height = 720
 scale = 2
 
 cap = cv2.VideoCapture(0)
